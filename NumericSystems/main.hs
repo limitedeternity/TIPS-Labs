@@ -1,6 +1,7 @@
 import PBase
 import FactorBase
 import FibBase
+import Data.List (tails)
 
 help :: IO ()
 help = mapM_ (putStrLn) [
@@ -13,6 +14,7 @@ help = mapM_ (putStrLn) [
     ]
 
 test = 
-    (all (&&True) $ map (\pair -> (fst pair) == (flip fromPToDecimal (snd pair) $ uncurry fromDecimalToP pair)) $ zip [0..1000] [1..32]) &&
-        (all (&&True) $ map (\n -> n == (fromFactorToDecimal $ fromDecimalToFactor n)) [0..1000]) &&
-            (all (&&True) $ map (\n -> n == (fromFibToDecimal $ fromDecimalToFib n)) [3..200])
+    (all (&&True) $ map (\pair -> (fst pair) == (flip fromPToDecimal (snd pair) $ uncurry fromDecimalToP pair)) $ [(x, y) | (x:ys) <- tails [-200..200], y <- [(-16)..(-2)]]) &&
+    (all (&&True) $ map (\pair -> (fst pair) == (flip fromPToDecimal (snd pair) $ uncurry fromDecimalToP pair)) $ [(x, y) | (x:ys) <- tails [0..200], y <- [2..16]]) &&
+    (all (&&True) $ map (\n -> n == (fromFactorToDecimal $ fromDecimalToFactor n)) [0..1000]) &&
+    (all (&&True) $ map (\n -> n == (fromFibToDecimal $ fromDecimalToFib n)) [3..200])
