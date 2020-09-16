@@ -1,11 +1,9 @@
 module FibBase where
-import Data.List (tails, nub, elemIndex, isInfixOf)
-import Data.Maybe (fromJust, isNothing)
+import Data.List (isInfixOf)
 
 fromDecimalToFib :: Int -> String
 fromDecimalToFib num = assemble $ traceSum num
     where
-        
         traceSum n | n == 0 = []
                    | otherwise = let takenFib = last fibRange in ([takenFib] ++ traceSum (n - takenFib))
                          where 

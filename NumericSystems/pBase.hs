@@ -1,4 +1,3 @@
-{-# LANGUAGE MultiWayIf #-}
 module PBase where
 import Data.List (elemIndex)
 import Data.Maybe (fromMaybe)
@@ -12,9 +11,9 @@ fromDecimalToP n p | (abs p) == 1 = error "IllegalBaseError"
         convert = (!!) (['0'..'9'] ++ ['a'..'z'])
         helper x i = let base = baseStream !! i
                          modulo = mod x base
-                         in if | x == 0 -> []
-                               | otherwise -> if | modulo >= 0 -> (helper (div x base) (i + 1)) ++ [modulo]
-                                                 | otherwise -> (helper ((div x base) + 1) (i + 1)) ++ [modulo + (abs base)]
+                         in if x == 0 then []
+                                      else if modulo >= 0 then (helper (div x base) (i + 1)) ++ [modulo]
+                                                          else (helper ((div x base) + 1) (i + 1)) ++ [modulo + (abs base)]
             where
                 baseStream = [p,p..]
 
