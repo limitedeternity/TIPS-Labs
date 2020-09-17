@@ -2,7 +2,6 @@ module FactorBase where
 import Data.List (elemIndex)
 import Data.Maybe (fromMaybe)
 
-
 fromDecimalToFactor :: Int -> String
 fromDecimalToFactor n = map convert $ helper n 0
     where

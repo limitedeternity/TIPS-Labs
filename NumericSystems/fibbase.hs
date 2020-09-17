@@ -13,7 +13,6 @@ fromDecimalToFib num = assemble $ traceSum num
             where
                 fibRange = let fibs = 0 : 1 : zipWith (+) fibs (tail fibs) in (drop 2 $ takeWhile (<=num) fibs)
 
-
 fromFibToDecimal :: String -> Int
 fromFibToDecimal pn | "11" `isInfixOf` pn = error "FibIncorrectError"
                     | otherwise = sum $ map (\p -> fibRange !! (fst p)) $ filter (\p -> (snd p) == '1') $ zip [0..] $ reverse pn
