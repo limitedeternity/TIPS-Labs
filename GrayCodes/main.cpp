@@ -1,6 +1,5 @@
 #include <iostream>
 #include <bitset>
-#include <cmath>
 
 /*
  * Демонстрация перевода чисел из двоичной системы счисления в код Грея
@@ -74,30 +73,19 @@ unsigned binToGrey(unsigned bin) {
  * на основе описанного в книге Генри Уоррена мл. "Алгоритмические трюки для программистов":
 */
 
-// Функция, округляющая вниз x до ближайшей степени 2.
-unsigned flp2(unsigned x) {
+// Функция, вычисляющая <целочисленный> логарифм по основанию 2.
+unsigned log2(unsigned x) {
     unsigned z = x;
-    unsigned y;
-    do {
-        y = z;
-
-        /* 
-         * "Эту формулу можно применять для проверки того,
-         * является ли беззнаковое целое число степенью 2
-         * (путём проверки результата вычислений на равенство с 0)"
-         *
-         * Обнуляет крайний справа единичный бит.
-        */
-        z = z & (z - 1);     
-    } while (z != 0);
-    return y;
+    unsigned result = 0;
+    while (z >>= 1) result++;
+    return result;
 }
 
 unsigned greyToBin(unsigned grey) {
     unsigned bin = grey;
     // Количество занимаемых числом битов
-    unsigned bits = log2(flp2(grey)) + 1;
-    for (unsigned i = 0; (1 << i) <= bits; i++) {
+    unsigned bits = log2(grey) + 1;
+    for (unsigned i = 0; (1 << i) < bits; i++) {
         bin ^= bin >> (1 << i);
     }
     return bin;
@@ -117,7 +105,7 @@ unsigned greyToBin(unsigned grey) {
 
 // ==================================
 
-int main(int argc, char* argv[]) {
+int main(void) {
     for (unsigned i = MAX_INT - 20; i < MAX_INT - 1; i++) {
         string bin = bitset<32>(i).to_string();
         bin.erase(0, bin.find_first_not_of('0'));
