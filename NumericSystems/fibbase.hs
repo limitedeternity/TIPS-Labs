@@ -19,3 +19,6 @@ fromFibToDecimal pn | "11" `isInfixOf` pn = error "FibIncorrectError"
                     | otherwise = sum $ map (\p -> fibRange !! (fst p)) $ filter (\p -> (snd p) == '1') $ zip [0..] $ reverse pn
     where
         fibRange = let fibs = 0 : 1 : zipWith (+) fibs (tail fibs) in (drop 2 $ take ((length pn) + 2) fibs)
+
+takeFibCounter :: Int -> [String]
+takeFibCounter n = take n $ map fromDecimalToFib [3..]
