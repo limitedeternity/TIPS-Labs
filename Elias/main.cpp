@@ -108,17 +108,12 @@ vector<unsigned> deltaDecode(vector<unsigned> delta) {
         it++;
     }
 
-    // Переводим количество бит из двоичного представления
-    int bits = (1 << bitZeros);
-    for (int i = 0; i < bitZeros; i++, it++) {
-        bits += *it * (1 << i);
-    }
+    // Я просто обрежу M*2+1 бит с начала, что оставит только корректные биты исходного числа.
+    // Например:
+    // 00100111 -> 111
+    vector<unsigned> slice = vector<unsigned>(delta.begin() + bitZeros * 2 + 1, delta.end());
 
-    // Обрезаем L бит с начала (было замечено, что L = M * 2 + 1),
-    // что оставит только корректные биты исходного числа
-    vector<unsigned> slice = vector<unsigned>(delta.begin() + bits, delta.end());
-
-    // Вставляем обрезанную старшую единицу
+    // Вставляем обрезанную старшую единицу: 111 -> 1111.
     slice.insert(slice.begin(), 1);
     return slice;
 }
