@@ -89,8 +89,12 @@ int main(void) {
         totalSum += 1.0 / (double)(1 << len);
     }
 
+    for (int i = 0; i < numberOfCodes - 1; i++) {
+        assert(codeLengths[i] <= codeLengths[i + 1] && "Code length condition didn't meet");
+    }
+
     // Проверяем неравенство Крафта
-    assert(totalSum < 1.0);
+    assert(totalSum < 1.0 && "Kraft's inequality condition didn't meet");
 
     vector<unsigned> curr(codeLengths[0]);
     fill(curr.begin(), curr.end(), 0);
