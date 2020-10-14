@@ -314,12 +314,8 @@ int main(void) {
 
     cout << endl;
 
-    // map {код->символ}
-    multimap<string, char> decodingTable = flip_map(encodingTable);
-
-    // Копии для проведения кодирования/декодирования
+    // Копия для проведения кодирования
     string encode = input;
-    string decode = input;
 
     for (map<char, string>::const_iterator it = encodingTable.begin(); it != encodingTable.end(); it++) {
         replaceAll(encode, string(1, it->first), it->second);
@@ -327,7 +323,14 @@ int main(void) {
 
     cout << "Encoded: " << encode << endl;
 
-    // А теперь – обратно
+    // map {код->символ}
+    multimap<string, char> decodingTable = flip_map(encodingTable);
+
+    // Копия для проведения декодирования
+    string decode = encode;
+
+    cout << "Decoded: " << decode << endl;
+    cout << "Test passed: " << (input.compare(decode) == 0 ? "True" : "False") << endl;
 
     delete tree;
     return 0;
