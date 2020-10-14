@@ -168,10 +168,7 @@ pair<vector<char>, vector<char> > shennonSplit(vector<double>& probabilities, ve
     int j = 1;
     double smallestSumDiff = 2.0;
 
-    // Неравенство Крафта для строк, состоящих из одного символа, 
-    // не выполняется (1 < 1). Поэтому, здесь программа завершится с ошибкой.
-    // Я специально.
-    for (;;j++) {
+    for (; probabilities.size() > 1; j++) {
         vector<double> head = vector<double>(probabilities.begin(), probabilities.begin() + j);
         vector<double> tail = vector<double>(probabilities.begin() + j, probabilities.end());
         double sumDiff = fabs(accumulate(head.begin(), head.end(), 0.0) - accumulate(tail.begin(), tail.end(), 0.0));
@@ -261,9 +258,12 @@ void replaceAll(string& target, const string& search, const string& replacement)
 }
 
 int main(void) {
-    string input;
     cout << "Input: ";
+
+    string input;
     getline(cin, input);
+    if (input.empty()) return 0;
+
     cout << endl;
 
     // Частотный анализ
@@ -328,6 +328,8 @@ int main(void) {
 
     // Копия для проведения декодирования
     string decode = encode;
+
+    // TODO: Декодировать
 
     cout << "Decoded: " << decode << endl;
     cout << "Test passed: " << (input.compare(decode) == 0 ? "True" : "False") << endl;
