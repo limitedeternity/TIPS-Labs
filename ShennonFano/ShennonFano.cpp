@@ -1,3 +1,16 @@
+/*
+ * Программа для кодирования методом Шеннона-Фано.
+ *
+ * Автор: Беспалов В. (3 курс, ИС)
+ * Эффективное время написания: ~24 часа.
+ * Компилятор: Apple LLVM version 10.0.0 (clang-1000.10.44.4)
+ * Примечания: 
+ *  - Для компиляции на ОС Windows лучше использовать Visual Studio.
+ *  - Наиболее вероятно, что для успешной компиляции, 
+ *    компилятор должен поддерживать стандарт С++17
+ *    (некоторые методы контейнеров были введены с этим стандартом).
+ */
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,6 +23,9 @@
 
 using namespace std;
 
+// Совокупность этих двух классов – бинарное дерево.
+// BSTNode – вершина.
+// BSTConnector – ребро.
 class BSTNode {
 public:
     class BSTConnector {
@@ -126,6 +142,7 @@ private:
     BSTConnector* Right;
 };
 
+// Конвертация вектора в строку
 template<class T> string vecToString(vector<T> vec, char const * delim = "") {
     ostringstream oss;
     if (!vec.empty()) {
@@ -136,6 +153,7 @@ template<class T> string vecToString(vector<T> vec, char const * delim = "") {
     return oss.str();
 }
 
+// "Переворачивание" ассоциативного контейнера map
 template <class A, class B> multimap<B, A> flip_map(map<A, B>& src) {
     multimap<B, A> dst;
     for (typename map<A, B>::const_iterator it = src.begin(); it != src.end(); it++) {
@@ -150,6 +168,9 @@ pair<vector<char>, vector<char> > shennonSplit(vector<double>& probabilities, ve
     int j = 1;
     double smallestSumDiff = 2.0;
 
+    // Неравенство Крафта для строк, состоящих из одного символа, 
+    // не выполняется (1 < 1). Поэтому, здесь программа завершится с ошибкой.
+    // Я специально.
     for (;;j++) {
         vector<double> head = vector<double>(probabilities.begin(), probabilities.begin() + j);
         vector<double> tail = vector<double>(probabilities.begin() + j, probabilities.end());
@@ -168,6 +189,11 @@ pair<vector<char>, vector<char> > shennonSplit(vector<double>& probabilities, ve
     return pair<vector<char>, vector<char> >(left, right);
 }
 
+// Функция для построения дерева, используя части вектора с символами,
+// разделённые относительно вектора с вероятностями функцией shennonSplit.
+// ---------
+// Примечание: алгоритм построения дерева ГАРАНТИРУЕТ выполнение условия префиксности
+// ---------
 BSTNode* buildTree(vector<char> leftVec, vector<char> rightVec) {
     // Это корень дерева. Есть левое и правое ребро.
     BSTNode* tree = new BSTNode(NULL);
@@ -178,10 +204,11 @@ BSTNode* buildTree(vector<char> leftVec, vector<char> rightVec) {
     if (leftVec.size() == 1) {
         currentPtr->getLeft()->setValue(leftVec[0]);
     }
-    // В противном случае:
-    else {
+    // Если не одно, а больше, то:
+    else if (leftVec.size() > 1) {
         // Создаем дерево на левом листе. Переключаемся на него
         currentPtr = currentPtr->getLeft()->attachNewTree();
+
         for (int i = 0; i < leftVec.size() - 1; i++) {
             // Вешаем значение на левый лист
             currentPtr->getLeft()->setValue(leftVec[i]);
@@ -193,28 +220,29 @@ BSTNode* buildTree(vector<char> leftVec, vector<char> rightVec) {
 
             // Если осталось не два значения, а больше, то делаем новое дерево на правом листе
             // и переключаемся на него
-            else {
+            else if (leftVec.size() - 2 > i) {
                 currentPtr = currentPtr->getRight()->attachNewTree();
             }
         }
     }
 
-    // Делаем то же самое с правым вектором.
     // Переключаемся на корень дерева.
     currentPtr = tree;
 
+    // Делаем то же самое с правым вектором.
     if (rightVec.size() == 1) {
         currentPtr->getRight()->setValue(rightVec[0]);
     }
-    else {
+    else if (rightVec.size() > 1) {
         currentPtr = currentPtr->getRight()->attachNewTree();
+
         for (int i = 0; i < rightVec.size() - 1; i++) {
             currentPtr->getLeft()->setValue(rightVec[i]);
 
             if (rightVec.size() - 2 == i) {
                 currentPtr->getRight()->setValue(rightVec[i + 1]);
             }
-            else {
+            else if (rightVec.size() - 2 > i) {
                 currentPtr = currentPtr->getRight()->attachNewTree();
             }
         }
@@ -223,6 +251,7 @@ BSTNode* buildTree(vector<char> leftVec, vector<char> rightVec) {
     return tree;
 }
 
+// Процедура замены всех вхождений в строку
 void replaceAll(string& target, const string& search, const string& replacement) {
     int pos = 0;
     while ((pos = target.find(search, pos)) != string::npos) {
@@ -250,7 +279,7 @@ int main(void) {
     // Вхождения сортируются (по возрастанию) по ключам автоматически
     multimap<int, char> flipFreq = flip_map(freqTable);
 
-    // Построение уже отсортированных векторов с символами и соотв. вероятностями
+    // Построение уже отсортированных (по убыванию) векторов с символами и соотв. вероятностями
     vector<char> chars;
     vector<double> probabilities;
     for (map<int, char>::const_reverse_iterator it = flipFreq.rbegin(); it != flipFreq.rend(); it++) {
@@ -260,6 +289,7 @@ int main(void) {
 
     // Поделить вектор с символами надвое относительно вектора с вероятностями
     pair<vector<char>, vector<char> > split = shennonSplit(probabilities, chars);
+
     // Построить дерево
     BSTNode* tree = buildTree(split.first, split.second);
 
@@ -296,6 +326,7 @@ int main(void) {
     }
 
     cout << "Encoded: " << encode << endl;
+
     // А теперь – обратно
 
     delete tree;
