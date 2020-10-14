@@ -32,9 +32,8 @@ int main(void) {
     cout << "Input: ";
     getline(cin, input);
 
-    // Копии для проведения компрессии/декомпрессии
+    // Копия для проведения компрессии
     string compress = input;
-    string decompress = input;
 
     // "Ловит" повторения односимвольных строк, н.п: "ooooo"
     regex single_ch( "((\\w|\\d)\\2{1,})" );
@@ -45,13 +44,13 @@ int main(void) {
     // "Ловит" следующее выражение: [количество_повторений|строка]
     regex pattern( "(\\[(\\d+)\\|(\\w+|\\d+)\\])" );
 
-    for (sregex_iterator it = sregex_iterator(compress.begin(), compress.end(), single_ch);
+    for (sregex_iterator it = sregex_iterator(input.begin(), input.end(), single_ch);
             it != sregex_iterator(); it++) {
         smatch match = *it;
         str_replace(compress, match.str(1), "[" + to_string(match.str(1).size() / match.str(2).size()) + "|" + match.str(2) + "]");
     }
 
-    for (sregex_iterator it = sregex_iterator(compress.begin(), compress.end(), multi_ch);
+    for (sregex_iterator it = sregex_iterator(input.begin(), input.end(), multi_ch);
             it != sregex_iterator(); it++) {
         smatch match = *it;
         str_replace(compress, match.str(1), "[" + to_string(match.str(1).size() / match.str(2).size()) + "|" + match.str(2) + "]");
@@ -59,7 +58,10 @@ int main(void) {
 
     cout << "Compressed: " << compress << endl;
 
-    for (sregex_iterator it = sregex_iterator(decompress.begin(), decompress.end(), pattern);
+    // Копия для проведения декомпрессии
+    string decompress = compress;
+
+    for (sregex_iterator it = sregex_iterator(compress.begin(), compress.end(), pattern);
             it != sregex_iterator(); it++) {
         smatch match = *it;
         str_replace(decompress, match.str(1), match.str(3) * stoi(match.str(2)));
