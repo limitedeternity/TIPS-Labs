@@ -223,6 +223,14 @@ BSTNode* buildTree(vector<char> leftVec, vector<char> rightVec) {
     return tree;
 }
 
+void replaceAll(string& target, const string& search, const string& replacement) {
+    int pos = 0;
+    while ((pos = target.find(search, pos)) != string::npos) {
+        target.replace(pos, search.size(), replacement);
+        pos += replacement.size();
+    }
+}
+
 int main(void) {
     string input;
     cout << "Input: ";
@@ -275,9 +283,20 @@ int main(void) {
     }
 
     cout << endl;
+
+    // map {код->символ}
     multimap<string, char> decodingTable = flip_map(encodingTable);
 
-    // Сделать замены
+    // Копии для проведения кодирования/декодирования
+    string encode = input;
+    string decode = input;
+
+    for (map<char, string>::const_iterator it = encodingTable.begin(); it != encodingTable.end(); it++) {
+        replaceAll(encode, string(1, it->first), it->second);
+    }
+
+    cout << "Encoded: " << encode << endl;
+    // А теперь – обратно
 
     delete tree;
     return 0;
