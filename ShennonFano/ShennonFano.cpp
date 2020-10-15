@@ -248,15 +248,6 @@ BSTNode* buildTree(vector<char> leftVec, vector<char> rightVec) {
     return tree;
 }
 
-// Процедура замены всех вхождений в строку
-void replaceAll(string& target, const string& search, const string& replacement) {
-    int pos = 0;
-    while ((pos = target.find(search, pos)) != string::npos) {
-        target.replace(pos, search.size(), replacement);
-        pos += replacement.size();
-    }
-}
-
 int main(void) {
     cout << "Input: ";
 
@@ -317,8 +308,10 @@ int main(void) {
     // Копия для проведения кодирования
     string encode = input;
 
-    for (map<char, string>::const_iterator it = encodingTable.begin(); it != encodingTable.end(); it++) {
-        replaceAll(encode, string(1, it->first), it->second);
+    int position = 0;
+    for (int i = 0; i < input.size(); i++) {
+        encode.replace(position, 1, encodingTable[input[i]]);
+        position += encodingTable[input[i]].size();
     }
 
     cout << "Encoded: " << encode << endl;
@@ -336,10 +329,6 @@ int main(void) {
         map<string, char>::const_iterator search = decodingTable.find(selection);
 
         if (search != decodingTable.end()) {
-            // Н.п: 
-            // 1) 0010111110 -> t10111110
-            // 2) t10111110 -> te111110
-            // 3) te111110 -> tem
             decode.replace(selectionStart, selection.size(), string(1, search->second));
             selectionStart += 1;
             selection = "";
