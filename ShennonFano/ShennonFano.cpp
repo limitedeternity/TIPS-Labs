@@ -329,10 +329,24 @@ int main(void) {
     // Копия для проведения декодирования
     string decode = encode;
 
-    // TODO: Декодировать
+    string selection;
+    int selectionStart = 0;
+    for (int i = 0; i < encode.size(); i++) {
+        selection += encode[i];
+        map<string, char>::const_iterator search = decodingTable.find(selection);
+
+        if (search != decodingTable.end()) {
+            // Н.п: 
+            // 1) 0010111110 -> t10111110
+            // 2) t10111110 -> te111110
+            // 3) te111110 -> tem
+            decode.replace(selectionStart, selection.size(), string(1, search->second));
+            selectionStart += 1;
+            selection = "";
+        }
+    }
 
     cout << "Decoded: " << decode << endl;
-    cout << "Test passed: " << (input.compare(decode) == 0 ? "True" : "False") << endl;
 
     delete tree;
     return 0;
