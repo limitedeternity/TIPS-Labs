@@ -2,7 +2,7 @@
  * Программа для кодирования методом Шеннона-Фано.
  *
  * Автор: Беспалов В. (3 курс, ИС)
- * Эффективное время написания: ~24 часа.
+ * Эффективное время написания: ~28 часов.
  * Компилятор: Apple LLVM version 10.0.0 (clang-1000.10.44.4)
  */
 
@@ -51,6 +51,7 @@ public:
 
         void setValue(char value) {
             if (this->hasNextTree()) throw "IllegalAttachment";
+
             this->Value = value;
             this->HasValue = true;
         }
@@ -58,7 +59,17 @@ public:
         BSTNode* attachNewTree() {
             if (this->HasValue) throw "IllegalAttachment";
             if (this->hasNextTree()) throw "TreeExists";
+
             this->NextTree = new BSTNode(this);
+            return this->NextTree;
+        }
+        
+        BSTNode* attachPrebuiltTree(BSTNode* tree) {
+            if (this->HasValue) throw "IllegalAttachment";
+            if (this->hasNextTree()) throw "TreeExists";
+
+            tree->_setAttachedTo(this);
+            this->NextTree = tree;
             return this->NextTree;
         }
 
@@ -96,6 +107,10 @@ public:
 
     BSTConnector* getRight() {
         return this->Right;
+    }
+
+    void _setAttachedTo(BSTConnector* attachedTo) {
+        this->AttachedTo = attachedTo;
     }
 
     BSTConnector* search(char c) {
@@ -158,7 +173,11 @@ template <class A, class B> multimap<B, A> flip_map(map<A, B>& src) {
     return dst;
 }
 
-pair<vector<char>, vector<char> > shennonSplit(vector<double>& probabilities, vector<char>& chars) {
+pair<
+    pair<vector<double>, vector<char> >, 
+    pair<vector<double>, vector<char> > 
+> 
+shennonSplit(vector<double>& probabilities, vector<char>& chars) {
     // Здесь будет точка разделения
     int j = 1;
     double smallestSumDiff = 2.0;
@@ -176,68 +195,54 @@ pair<vector<char>, vector<char> > shennonSplit(vector<double>& probabilities, ve
         }
     }
 
-    vector<char> left = vector<char>(chars.begin(), chars.begin() + j);
-    vector<char> right = vector<char>(chars.begin() + j, chars.end());
-    return pair<vector<char>, vector<char> >(left, right);
+    vector<double> probLeft = vector<double>(probabilities.begin(), probabilities.begin() + j);
+    vector<char> chrLeft = vector<char>(chars.begin(), chars.begin() + j);
+    pair<vector<double>, vector<char> > pairLeft = pair<vector<double>, vector<char> >(probLeft, chrLeft);
+
+    vector<double> probRight = vector<double>(probabilities.begin() + j, probabilities.end());
+    vector<char> chrRight = vector<char>(chars.begin() + j, chars.end());
+    pair<vector<double>, vector<char> > pairRight = pair<vector<double>, vector<char> >(probRight, chrRight);
+
+    return pair<pair<vector<double>, vector<char> >, pair<vector<double>, vector<char> > >(pairLeft, pairRight);
 }
 
-// Функция для построения дерева, используя части вектора с символами,
-// разделённые относительно вектора с вероятностями функцией shennonSplit.
-// ---------
-// Примечание: алгоритм построения дерева ГАРАНТИРУЕТ выполнение условия префиксности
-// ---------
-BSTNode* buildTree(vector<char> leftVec, vector<char> rightVec) {
-    // Это корень дерева. Есть левое и правое ребро.
+// Функция для построения дерева Шеннона 
+// (выполнение условия префиксности гарантируется)
+BSTNode* buildTreeEx(vector<double>& probabilities, vector<char>& chars) {
     BSTNode* tree = new BSTNode(NULL);
-    BSTNode* currentPtr = tree;
+    pair<pair<vector<double>, vector<char> >, pair<vector<double>, vector<char> > > split = shennonSplit(probabilities, chars);
+    
+    pair<vector<double>, vector<char> > pairLeft = split.first;
+    vector<double> probLeft = pairLeft.first;
+    vector<char> chrLeft = pairLeft.second;
 
-    // Если в левом векторе только одно значение,
-    // то только его и вешаем на левый лист
-    if (leftVec.size() == 1) {
-        currentPtr->getLeft()->setValue(leftVec[0]);
+    pair<vector<double>, vector<char> > pairRight = split.second;
+    vector<double> probRight = pairRight.first;
+    vector<char> chrRight = pairRight.second;
+
+    // Построение левой части
+    if (chrLeft.size() == 1) {
+        tree->getLeft()->setValue(chrLeft[0]);
     }
-    // Если не одно, а больше, то:
-    else if (leftVec.size() > 1) {
-        // Создаем дерево на левом листе. Переключаемся на него
-        currentPtr = currentPtr->getLeft()->attachNewTree();
-
-        for (int i = 0; i < leftVec.size() - 1; i++) {
-            // Вешаем значение на левый лист
-            currentPtr->getLeft()->setValue(leftVec[i]);
-
-            // Добавляем последнее значение на правый лист, если в векторе (осталось) два значения
-            if (leftVec.size() - 2 == i) {
-                currentPtr->getRight()->setValue(leftVec[i + 1]);
-            }
-
-            // Если осталось не два значения, а больше, то делаем новое дерево на правом листе
-            // и переключаемся на него
-            else if (leftVec.size() - 2 > i) {
-                currentPtr = currentPtr->getRight()->attachNewTree();
-            }
-        }
+    else if (chrLeft.size() == 2) {
+        BSTNode* newTree = tree->getLeft()->attachNewTree();
+        newTree->getLeft()->setValue(chrLeft[0]);
+        newTree->getRight()->setValue(chrLeft[1]);
+    }
+    else if (chrLeft.size() > 2) {
+        tree->getLeft()->attachPrebuiltTree(buildTreeEx(probLeft, chrLeft));
     }
 
-    // Переключаемся на корень дерева.
-    currentPtr = tree;
-
-    // Делаем то же самое с правым вектором.
-    if (rightVec.size() == 1) {
-        currentPtr->getRight()->setValue(rightVec[0]);
+    // Построение правой части
+    if (chrRight.size() == 1) {
+        tree->getRight()->setValue(chrRight[0]);
     }
-    else if (rightVec.size() > 1) {
-        currentPtr = currentPtr->getRight()->attachNewTree();
-
-        for (int i = 0; i < rightVec.size() - 1; i++) {
-            currentPtr->getLeft()->setValue(rightVec[i]);
-
-            if (rightVec.size() - 2 == i) {
-                currentPtr->getRight()->setValue(rightVec[i + 1]);
-            }
-            else if (rightVec.size() - 2 > i) {
-                currentPtr = currentPtr->getRight()->attachNewTree();
-            }
-        }
+    else if (chrRight.size() == 2) {
+        BSTNode* newTree = tree->getRight()->attachNewTree();
+        newTree->getLeft()->setValue(chrRight[0]);
+        newTree->getRight()->setValue(chrRight[1]);
+    } else if (chrRight.size() > 2) {
+        tree->getRight()->attachPrebuiltTree(buildTreeEx(probRight, chrRight));
     }
 
     return tree;
@@ -273,11 +278,8 @@ int main(void) {
         probabilities.push_back((double)it->first / (double)input.size());
     }
 
-    // Поделить вектор с символами надвое относительно вектора с вероятностями
-    pair<vector<char>, vector<char> > split = shennonSplit(probabilities, chars);
-
-    // Построить дерево
-    BSTNode* tree = buildTree(split.first, split.second);
+    // Построение дерева
+    BSTNode* tree = buildTreeEx(probabilities, chars);
 
     // Строим map {символ->код}
     map<char, string> encodingTable;
