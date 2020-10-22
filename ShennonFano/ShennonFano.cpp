@@ -260,11 +260,7 @@ int main(void) {
     // Частотный анализ
     map<char, int> freqTable;
     for (int i = 0; i < input.size(); i++) {
-        if (freqTable.find(input[i]) == freqTable.end()) {
-            freqTable[input[i]] = 1;
-        } else {
-            freqTable[input[i]] += 1;
-        }
+        freqTable[input[i]] += 1;
     }
 
     // Вхождения сортируются (по возрастанию) по ключам автоматически
