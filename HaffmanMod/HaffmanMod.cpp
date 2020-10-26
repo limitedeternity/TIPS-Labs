@@ -267,8 +267,6 @@ int main(void) {
     getline(cin, input);
     if (input.empty()) return 0;
 
-    cout << endl;
-
     // Частотный анализ
     map<char, int> freqTable;
     for (int i = 0; i < input.size(); i++) {
@@ -288,7 +286,7 @@ int main(void) {
 
     // Построение дерева
     BSTNode* tree = buildTree(probabilities, chars);
-    cout << "\033[F" << "Tree: " << tree->stringify() << endl << endl;
+    cout << "Tree: " << tree->stringify() << endl << endl;
 
     // Строим map {символ->код}
     map<char, string> encodingTable;
