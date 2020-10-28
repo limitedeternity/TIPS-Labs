@@ -51,11 +51,8 @@ int main(void) {
     if (input.empty()) return 0;
 
     vector<string> strNumbers = split(input); 
-    vector<int> numbers; 
-    transform(strNumbers.begin(), strNumbers.end(), back_inserter(numbers), [](string s) -> int { return stoi(s); });
-
     vector<string> unaryEncoded;
-    transform(numbers.begin(), numbers.end(), back_inserter(unaryEncoded), unaryEncode);
+    transform(strNumbers.begin(), strNumbers.end(), back_inserter(unaryEncoded), [](string s) -> string { return unaryEncode(stoi(s)); });
 
     string bitstream = vecToString(unaryEncoded);
     cout << "Encoded stream: " << bitstream << endl;
