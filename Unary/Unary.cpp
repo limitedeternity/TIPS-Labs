@@ -1,18 +1,18 @@
 /*
- * Программа для перевода чисел в унарный код и обратно.
+ * РџСЂРѕРіСЂР°РјРјР° РґР»СЏ РїРµСЂРµРІРѕРґР° С‡РёСЃРµР» РІ СѓРЅР°СЂРЅС‹Р№ РєРѕРґ Рё РѕР±СЂР°С‚РЅРѕ.
  * 
- * Автор: Беспалов В. (3 курс, ИС)
- * Эффективное время написания: ~30 минут
- * Компилятор: Apple LLVM version 10.0.0 (clang-1000.10.44.4)
+ * РђРІС‚РѕСЂ: Р‘РµСЃРїР°Р»РѕРІ Р’. (3 РєСѓСЂСЃ, РРЎ)
+ * Р­С„С„РµРєС‚РёРІРЅРѕРµ РІСЂРµРјСЏ РЅР°РїРёСЃР°РЅРёСЏ: ~30 РјРёРЅСѓС‚
+ * РљРѕРјРїРёР»СЏС‚РѕСЂ: Apple LLVM version 10.0.0 (clang-1000.10.44.4)
 */
 
 #include <iostream>
 #include <vector>
 #include <string>
-#include <sstream> // для ostringstream
-#include <iterator> // для ostream_iterator
-#include <algorithm> // для transform
-#include <cassert> // для assert
+#include <sstream> // РґР»СЏ ostringstream
+#include <iterator> // РґР»СЏ ostream_iterator
+#include <algorithm> // РґР»СЏ transform
+#include <cassert> // РґР»СЏ assert
 
 using namespace std;
 
