@@ -67,7 +67,7 @@ private:
 // Класс-фасад перед потоком ввода, позволяющий
 // считывать сгруппированные биты кодов
 class input_code_stream {
-public :
+public:
     input_code_stream(istream& input, unsigned max_code)
         : m_input(input),
           m_code_size(9),
@@ -101,7 +101,7 @@ public :
         return i != 256;
     }
 
-private :
+private:
     istream& m_input;
     int m_code_size;
     int m_available_bits;
@@ -111,7 +111,41 @@ private :
     unsigned m_max_code;
 };
 
+// Класс-фасад перед потоком ввода, позволяющий
+// считывать ВСЕ символы при помощи оператора >>
+// (см. различия между этим оператором и методом .get)
+class input_symbol_stream {
+public:
+    input_symbol_stream(istream& input) 
+        : m_input(input) 
+    {}
+
+    bool operator>>(char &c) {
+        return (bool) m_input.get(c);
+    }
+
+private:
+    istream& m_input;
+};
+
+// Класс-фасад перед потоком вывода.
+// Просто декорация для соответствия input_symbol_stream.
+class output_symbol_stream {
+public:
+    output_symbol_stream(ostream& output)
+        : m_output(output)
+    {}
+
+    void operator<<(const string &s) {
+        m_output << s;
+    }
+
+private:
+    ostream& m_output;
+};
+
 void compress(istream& input, ostream& output, const unsigned max_code = 32767) {
+    input_symbol_stream in(input);
     output_code_stream out(output, max_code);
 
     map<string, int> dictionary;
@@ -122,7 +156,7 @@ void compress(istream& input, ostream& output, const unsigned max_code = 32767) 
     int nextCode = 257;
     string word;
     char c;
-    while (input >> c) {
+    while (in >> c) {
         word += c;
         if (dictionary.find(word) == dictionary.end()) {
             if (nextCode <= max_code) dictionary[word] = nextCode++;
@@ -137,6 +171,7 @@ void compress(istream& input, ostream& output, const unsigned max_code = 32767) 
 
 void decompress(istream& input, ostream& output, const unsigned int max_code = 32767) {
     input_code_stream in(input, max_code);
+    output_symbol_stream out(output);
 
     map<int, string> dictionary;
     for (int i = 0; i < 256; i++) {
@@ -148,7 +183,7 @@ void decompress(istream& input, ostream& output, const unsigned int max_code = 3
     int nextCode = 257;
     while (in >> code) {
         if (dictionary.find(code) == dictionary.end()) dictionary[code] = word + word[0];
-        output << dictionary[code];
+        out << dictionary[code];
         if (!word.empty() && nextCode <= max_code) dictionary[nextCode++] = word + dictionary[code][0];
         word = dictionary[code];
     }
