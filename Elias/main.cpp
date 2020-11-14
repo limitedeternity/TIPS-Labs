@@ -222,11 +222,6 @@ vector<unsigned> omegaDecode(string omega) {
     size_t i = 0;
     while (i < omega.size()) {
         unsigned n = 1;
-        if (omega[i] == '0') {
-            result.push_back(n); i++;
-            continue;
-        }
-
         while (omega[i] == '1') {
             vector<char> slice(omega.begin() + i, omega.begin() + i + n + 1);
             vector<unsigned> newN;
