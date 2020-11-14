@@ -1,7 +1,7 @@
 #include <iostream>
-#include <vector> 
+#include <vector>
 #include <sstream>
-#include <iterator>
+#include <algorithm> // для transform, move
 
 using namespace std;
 
@@ -10,21 +10,11 @@ using namespace std;
  * натуральных чисел.
  *
  * Автор: Беспалов В. (3 курс, ИС)
- * Начало: 26.09.2020 13:10:57
- * Финиш: 27.09.2020 1:00:20
+ * Эффективное время написания: 12 + 4 = 16 часов
  * Компилятор: Apple LLVM version 10.0.0 (clang-1000.10.44.4)
+ * Доп.флаги компиляции: -std=c++11
  * Используемая литература:
  * - Ватолин Д. и Ко: "Методы сжатия данных. Устройство архиваторов, сжатие изображений и видео."
- * */
-
-/* 
- * Алгоритм построения гамма-кода: 
- *   - Записать число в двоичном представлении
- *   - Перед двоичным представлением дописать нули,
- *   количество которых на единицу меньше количества битов
- *   двоичного представления.
- *
- * Например: 1111 -> 0001111.
  * */
 
 // Функция, вычисляющая <целочисленный> логарифм по основанию 2.
@@ -35,21 +25,60 @@ unsigned log2(unsigned x) {
     return result;
 }
 
-vector<unsigned> eliasGamma(unsigned bin) {
-    // Используется вектор, потому что bitset фиксированного размера.
-    vector<unsigned> result;
+vector<string> split(const string& s, const char delim = ' ') {
+    vector<string> elems;
+    stringstream ss;
+    ss.str(s);
+    string item;
+    while (getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+
+    return elems;
+}
+
+template<class T> string vecToString(vector<T> vec, char const * delim = "") {
+    ostringstream oss;
+    if (!vec.empty()) {
+        copy(vec.begin(), vec.end() - 1, ostream_iterator<T>(oss, delim));
+        oss << vec.back();
+    }
+
+    return oss.str();
+}
+
+unsigned binToDec(vector<unsigned>& bin) {
+    unsigned n = 0;
+    for (int i = bin.size() - 1; i >= 0; i--) {
+        n += bin[i] * (1 << (bin.size() - i - 1));
+    }
+
+    return n;
+}
+
+/* 
+ * Алгоритм построения гамма-кода: 
+ *   - Записать число в двоичном представлении
+ *   - Перед двоичным представлением дописать нули,
+ *   количество которых на единицу меньше количества битов
+ *   двоичного представления.
+ *
+ * Например: 1111 -> 0001111.
+ * */
+string eliasGamma(unsigned bin) {
+    string result;
 
     // Количество занимаемых числом битов
     unsigned bits = log2(bin) + 1;
 
     // > "дописать нули, количество которых на единицу меньше количества битов"
     // Сдвиг вправо на количество бит большее, чем занимает число, всегда возвращает 0.
-    for (int i = 0; i < bits * 2 - 1; i++) {
-        // Получает младший бит и вставляет его в начало вектора
+    for (unsigned i = 0; i < bits * 2 - 1; i++) {
+        // Получает младший бит и вставляет его в начало
         // Например: 
         // 1) 1101 >> 1 = 110
         // 2) 110 & 1 = 0
-        result.insert(result.begin(), (bin >> i) & 1);
+        result.insert(result.begin(), ((bin >> i) & 1) + '0');
     }
 
     return result;
@@ -61,15 +90,34 @@ vector<unsigned> eliasGamma(unsigned bin) {
  *   - Пропускаем первую единицу, прибавляем к остатку результат сдвига
  *
  * Например: 
- *   - 0001111 -> 000 111
+ *   - 0001111 -> 0001 111
  *   - 1 << 3 = 1000
  *   - 1000 + 111 = 1111
  * */
 
-// Я просто обрежу вектор по количеству нулей:
-// - [0,0,0,1,1,1,1].size() / 2 = 3
-vector<unsigned> gammaDecode(vector<unsigned> gamma) {
-    return vector<unsigned>(gamma.begin() + gamma.size() / 2, gamma.end());
+vector<unsigned> gammaDecode(string gamma) {
+    vector<unsigned> result;
+    size_t i = 0;
+    while (i < gamma.size()) {
+        int zeros = 0;
+        size_t shift = 0;
+        while (gamma[i + shift++] == '0') {
+            zeros++;
+        }
+
+        if (zeros == 0) {
+            result.push_back(1); i++;
+            continue;
+        }
+
+        vector<char> numberAsStr(gamma.begin() + i + shift, gamma.begin() + i + shift + zeros);
+        vector<unsigned> number;
+        transform(numberAsStr.begin(), numberAsStr.end(), back_inserter(number), [](char c) -> unsigned { return c - '0'; });
+        result.push_back(binToDec(number) + (1 << zeros));
+        i += shift + zeros;
+    }
+
+    return result;
 }
 
 /*
@@ -78,13 +126,13 @@ vector<unsigned> gammaDecode(vector<unsigned> gamma) {
  * - Дописать к закодированному количеству значащих битов справа само число
  *   без старшей единицы.
  * */
-vector<unsigned> eliasDelta(unsigned bin) {
+string eliasDelta(unsigned bin) {
     unsigned bits = log2(bin) + 1;
-    vector<unsigned> gammaBits = eliasGamma(bits);
-    vector<unsigned> result;
+    string gammaBits = eliasGamma(bits);
+    string result;
 
     for (int i = 0; i < bits - 1; i++) {
-        result.insert(result.begin(), (bin >> i) & 1);
+        result.insert(result.begin(), ((bin >> i) & 1) + '0');
     }
 
     // Я сделал наоборот: дописал закодированное количество бит слева
@@ -96,26 +144,43 @@ vector<unsigned> eliasDelta(unsigned bin) {
 /*
  * Алгоритм декодирования дельта-кода:
  * - Считаем количество нулей до первой единицы (М)
- * - Читаем следующие М бит. Получаем количество бит
- *   исходного числа + 1 (L).
- * - Читаем следующие L - 1 бит и восстанавливаем число.
+ * - Читаем следующие М бит. Получаем часть исходного числа (L).
+ * - Читаем следующие L - 1 бит (T).
+ * - Убираем у L справа M бит, присоединяем T, восстанавливаем число.
  * */
-vector<unsigned> deltaDecode(vector<unsigned> delta) {
-    int bitZeros = 0;
-    vector<unsigned>::iterator it = delta.begin();
-    while (*it != 1) {
-        bitZeros++;
-        it++;
+vector<unsigned> deltaDecode(string delta) {
+    vector<unsigned> result;
+    size_t i = 0;
+    while (i < delta.size()) {
+        int zeros = 0;
+        size_t shift = 0;
+        while (delta[i + shift++] == '0') {
+            zeros++;
+        }
+
+        if (zeros == 0) {
+            result.push_back(1); i++;
+            continue;
+        }
+
+        vector<char> LAsStr(delta.begin() + i + zeros, delta.begin() + i + zeros * 2 + 1);
+        vector<unsigned> LAsVec;
+        transform(LAsStr.begin(), LAsStr.end(), back_inserter(LAsVec), [](char c) -> unsigned { return c - '0'; });
+        unsigned L = binToDec(LAsVec);
+
+        vector<char> TAsStr(delta.begin() + i + zeros * 2 + 1, delta.begin() + i + zeros * 2 + 1 + L - 1);
+        vector<unsigned> TAsVec;
+        transform(TAsStr.begin(), TAsStr.end(), back_inserter(TAsVec), [](char c) -> unsigned { return c - '0'; });
+
+        vector<unsigned> number;
+        move(LAsVec.begin(), LAsVec.end() - zeros, back_inserter(number));
+        move(TAsVec.begin(), TAsVec.end(), back_inserter(number));
+        
+        result.push_back(binToDec(number));
+        i += zeros * 2 + 1 + L - 1;
     }
 
-    // Я просто обрежу M*2+1 бит с начала, что оставит только корректные биты исходного числа.
-    // Например:
-    // 00100111 -> 111
-    vector<unsigned> slice = vector<unsigned>(delta.begin() + bitZeros * 2 + 1, delta.end());
-
-    // Вставляем обрезанную старшую единицу: 111 -> 1111.
-    slice.insert(slice.begin(), 1);
-    return slice;
+    return result;
 }
 
 /*
@@ -127,16 +192,17 @@ vector<unsigned> deltaDecode(vector<unsigned> delta) {
  * - Вернуться к шагу 2.
  * */
 
-vector<unsigned> eliasOmega(unsigned bin) {
-    vector<unsigned> result;
-    result.push_back(0);
+string eliasOmega(unsigned bin) {
+    string result;
+    result.push_back('0');
     
     unsigned n = bin;
     while (n != 1) {
         unsigned bits = log2(n) + 1;
-        for (int i = 0; i < bits; i++) {
-            result.insert(result.begin(), (n >> i) & 1);
+        for (unsigned i = 0; i < bits; i++) {
+            result.insert(result.begin(), ((n >> i) & 1) + '0');
         }
+
         n = bits - 1;
     }
 
@@ -151,62 +217,67 @@ vector<unsigned> eliasOmega(unsigned bin) {
  * - Удаляем считанную группу и продолжаем.
  * */
 
-vector<unsigned> omegaDecode(vector<unsigned> omega) {
-    vector<unsigned>::iterator it = omega.begin();
-    vector<unsigned> tmp;
-    unsigned n = 1;
-
-    // Если исходное число – единица, то омега-код – просто нуль.
-    // Как следствие, в результате получится пустая строка.
-    // Чтобы этого не произошло, возвращаем единицу до начала выполнения
-    // алгоритма.
-    if (omega.size() == 1) {
-        tmp.push_back(n);
-        return tmp;
-    }
-
-    while (*it == 1) {
-        tmp = vector<unsigned>(it, it + n + 1);
-        it += n + 1;
-        n = 0;
-
-        for (int i = tmp.size() - 1; i >= 0; i--) {
-            n += tmp[i] * (1 << (tmp.size() - i - 1));
+vector<unsigned> omegaDecode(string omega) {
+    vector<unsigned> result;
+    size_t i = 0;
+    while (i < omega.size()) {
+        unsigned n = 1;
+        if (omega[i] == '0') {
+            result.push_back(n); i++;
+            continue;
         }
+
+        while (omega[i] == '1') {
+            vector<char> slice(omega.begin() + i, omega.begin() + i + n + 1);
+            vector<unsigned> newN;
+            transform(slice.begin(), slice.end(), back_inserter(newN), [](char c) -> unsigned { return c - '0'; });
+            unsigned tempN = binToDec(newN);
+
+            i += n + 1;
+            if (tempN != 0) {
+                n = tempN;
+            }
+        } 
+
+        result.push_back(n);
+        i++;
     }
 
-    return tmp;
-}
-
-// Полиморфная конвертация вектора в строку
-template<class T> string vecToString(vector<T> vec, char const * delim = "") {
-    ostringstream oss;
-    if (!vec.empty()) {
-        copy(vec.begin(), vec.end() - 1, ostream_iterator<T>(oss, delim));
-        oss << vec.back();
-    }
-
-    return oss.str();
+    return result;
 }
 
 int main(void) {
-    for (int i = 1; i < 16; i++) {
-        vector<unsigned> gamma = eliasGamma(i);
-        vector<unsigned> gback = gammaDecode(gamma);
-        vector<unsigned> delta = eliasDelta(i);
-        vector<unsigned> dback = deltaDecode(delta);
-        vector<unsigned> omega = eliasOmega(i);
-        vector<unsigned> oback = omegaDecode(omega);
+    string input;
+    cout << "Natural numbers (space delimited): ";
+    getline(cin, input);
+    if (input.empty()) return 0;
 
-        cout << "Число: " << i << "\n" 
-            << "Гамма-код: " << vecToString(gamma) << "\n" 
-            << "Возврат из гамма-кода: " << vecToString(gback) << "\n"
-            << "Дельта-код: " << vecToString(delta) << "\n" 
-            << "Возврат из дельта-кода: " << vecToString(dback) << "\n" 
-            << "Омега-код: " << vecToString(omega) << "\n"
-            << "Возврат из омега-кода: " << vecToString(oback) << "\n"
-            << endl;
+    vector<string> strNumbers = split(input);
+    vector<unsigned> numbers;
+    transform(strNumbers.begin(), strNumbers.end(), back_inserter(numbers), [](string s) -> unsigned { return stoi(s); });
+    
+    string eliasGammaStream;
+    for (unsigned number : numbers) {
+        eliasGammaStream += eliasGamma(number);
     }
 
+    cout << "Elias Gamma: " << eliasGammaStream << endl;
+    cout << "From Gamma: " << vecToString(gammaDecode(eliasGammaStream), " ") << endl;
+
+    string eliasDeltaStream;
+    for (unsigned number : numbers) {
+        eliasDeltaStream += eliasDelta(number);
+    }
+
+    cout << "Elias Delta: " << eliasDeltaStream << endl;
+    cout << "From Delta: " << vecToString(deltaDecode(eliasDeltaStream), " ") << endl;
+
+    string eliasOmegaStream;
+    for (unsigned number : numbers) {
+        eliasOmegaStream += eliasOmega(number);
+    }
+
+    cout << "Elias Omega: " << eliasOmegaStream << endl;
+    cout << "From Omega: " << vecToString(omegaDecode(eliasOmegaStream), " ") << endl;
     return 0;
 }
