@@ -2,19 +2,31 @@
  * Демонстрация перевода натуральных чисел в коды Левенштейна.
  *
  * Автор: Беспалов В. (3 курс, ИС)
- * Начало: 22.10.2020 19:15
- * Финиш: 22.10.2020 20:47
+ * Эффективное время написания: 2 + 3 = 5 часов
  * Компилятор: Apple LLVM version 10.0.0 (clang-1000.10.44.4)
+ * Доп.флаги компиляции: -std=c++11
  * */
 
 #include <iostream>
 #include <vector>
 #include <string>
 #include <sstream> // для ostringstream
-#include <iterator> // для ostream_iterator
 #include <cmath> // для log2
+#include <algorithm> // для transform
 
 using namespace std;
+
+vector<string> split(const string& s, const char delim = ' ') {
+    vector<string> elems;
+    stringstream ss;
+    ss.str(s);
+    string item;
+    while (getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+
+    return elems;
+}
 
 // Перевод двоичного числа, представленного в виде вектора,
 // в десятичное число.
@@ -51,8 +63,8 @@ template<class T> string vecToString(vector<T> vec, char const * delim = "") {
 }
 
 // Кодирование
-vector<unsigned> levenEncode(unsigned n) {
-    if (n == 0) return vector<unsigned>(1, 0);
+string levenEncode(unsigned n) {
+    if (n == 0) return string(1, '0');
 
     vector<unsigned> code;
     vector<unsigned> binary;
@@ -67,45 +79,58 @@ vector<unsigned> levenEncode(unsigned n) {
 
     code.insert(code.begin(), 1, 0);
     code.insert(code.begin(), counter, 1);
-    return code;
+    return vecToString(code);
 }
 
 // Декодирование
-unsigned levenDecode(vector<unsigned> code) {
-    if (code == vector<unsigned>(1, 0)) return 0;
-
-    int ones = 0;
-    for (int i = 0; i < code.size(); i++) {
-        if (code[i] == 0) break;
-        ones++;
-    }
-
-    int n = 1;
-    int offset = ones + 1;
-    for (int i = ones - 1; i > 0; i--) {
-        if (offset < code.size() && offset + n < code.size()) {
-            binary = vector<unsigned>(code.begin() + offset, code.begin() + offset + n);
-        }
-        else if (offset < code.size() && offset + n >= code.size()) {
-            binary = vector<unsigned>(code.begin() + offset, code.end());
+vector<unsigned> levenDecode(string code) {
+    vector<unsigned> result;
+    size_t i = 0;
+    while (i < code.size()) {
+        int offset = 0;
+        while (code[i + offset++] == '1') {}
+        if (offset - 1 == 0) {
+            result.push_back(0);
+            i += offset;
+            continue;
         }
 
-        binary.insert(binary.begin(), 1, 1);
-        offset += n;
-        n = binToDec(binary);
+        unsigned n = 1;
+        string encodedCmp = levenEncode(n);
+        while (string(code.begin() + i, code.begin() + i + offset) != encodedCmp) {
+            vector<char> slice(code.begin() + i + offset, code.begin() + i + offset + n);
+            slice.insert(slice.begin(), '1');
+            offset += n;
+
+            vector<unsigned> bits;
+            transform(slice.begin(), slice.end(), back_inserter(bits), [](char c) -> unsigned { return c - '0'; });
+            n = binToDec(bits);
+            encodedCmp = levenEncode(n);
+        }
+
+        result.push_back(n);
+        i += encodedCmp.size();
     }
 
-    return n;
+    return result;
 }
 
 int main(void) {
-    for (int i = 0; i < 16; i++) {
-        vector<unsigned> encoded = levenEncode(i);
+    string input;
+    cout << "Positive numbers (space delimited): ";
+    getline(cin, input);
+    if (input.empty()) return 0;
 
-        cout << "Number: " << i << endl;
-        cout << "Encoded: " << vecToString(encoded) << endl;
-        cout << "Decoded: " << levenDecode(encoded) << endl << endl;
+    vector<string> strNumbers = split(input);
+    vector<unsigned> numbers;
+    transform(strNumbers.begin(), strNumbers.end(), back_inserter(numbers), [](string s) -> unsigned { return stoi(s); });
+
+    string levenStream;
+    for (unsigned number : numbers) {
+        levenStream += levenEncode(number);
     }
 
+    cout << "Levenstein Code: " << levenStream << endl;
+    cout << "From Levenstein: " << vecToString(levenDecode(levenStream), " ") << endl;
     return 0;
 }
