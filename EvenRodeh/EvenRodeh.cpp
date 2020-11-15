@@ -1,17 +1,31 @@
 /*
- * Демонстрация перевода чисел в коды Ивэн-Родэ и обратно.
+ * Программа для перевода чисел в коды Ивэн-Родэ и обратно.
  *
  * Автор: Беспалов В. (3 курс, ИС)
- * Эффективное время написания: 2 часа
+ * Эффективное время написания: 2 + 3 = 5 часов
  * Компилятор: Apple LLVM version 10.0.0 (clang-1000.10.44.4)
+ * Доп.флаги компиляции: -std=c++11
  */
 
 #include <iostream>
 #include <vector>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
+
+vector<string> split(const string& s, const char delim = ' ') {
+    vector<string> elems;
+    stringstream ss;
+    ss.str(s);
+    string item;
+    while (getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+
+    return elems;
+}
 
 template<class T> vector<T> rjust(vector<T> vec, unsigned len, T justifier) {
     vector<T> vecCopy(vec);
@@ -52,26 +66,44 @@ vector<unsigned> decToBin(unsigned dec) {
     return result;
 }
 
-int evenDecode(vector<unsigned> code) {
-    size_t i = 3;
-    vector<unsigned> bits = vector<unsigned>(code.begin(), code.begin() + i);
-    int number = binToDec(bits);
-    if (bits[0] == 0) return number;
+vector<unsigned> evenDecode(string code) {
+    vector<unsigned> result;
+    size_t i = 0;
+    while (i < code.size()) {
+        size_t shift = 3;
+        
+        vector<char> slice(code.begin() + i, code.begin() + i + shift);
+        vector<unsigned> bits;
+        transform(slice.begin(), slice.end(), back_inserter(bits), [](char c) -> unsigned { return c - '0'; });
+        unsigned number = binToDec(bits);
 
-    do {
-        if (code[i] == 0) return number;
-        bits = vector<unsigned>(code.begin() + i, code.begin() + i + number);
-        number = binToDec(bits);
-        i += bits.size();
-    } while (i < code.size());
-    return number;
+        if (slice[0] == '0') {
+            result.push_back(number);
+            i += shift;
+            continue;
+        }
+
+        while (code[i + shift] == '1') {
+            slice.clear();
+            bits.clear();
+            slice = vector<char>(code.begin() + i + shift, code.begin() + i + shift + number);
+            transform(slice.begin(), slice.end(), back_inserter(bits), [](char c) -> unsigned { return c - '0'; });
+            number = binToDec(bits);
+            shift += bits.size();
+        }
+
+        result.push_back(number);
+        i += shift + 1;
+    }
+
+    return result;
 }
 
-vector<unsigned> evenEncode(int number) {
+string evenEncode(unsigned number) {
     vector<unsigned> code;
     if (number < 4) {
         code = decToBin(number);
-        return rjust(code, 3, (unsigned) 0);
+        return vecToString(rjust(code, 3, (unsigned) 0));
     }
 
     code.push_back(0);
@@ -83,14 +115,25 @@ vector<unsigned> evenEncode(int number) {
 
     vector<unsigned> bin = decToBin(number);
     code.insert(code.begin(), bin.begin(), bin.end());
-    return code;
+    return vecToString(code);
 }
 
 int main(void) {
-    for (int i = 0; i < 18; i++) {
-        vector<unsigned> encode = evenEncode(i);
-        cout << "Number: " << i << "; Encode: " << vecToString(encode) << "; Decode: " << evenDecode(encode) << endl;
+    string input;
+    cout << "Positive numbers (space delimited): ";
+    getline(cin, input);
+    if (input.empty()) return 0;
+
+    vector<string> strNumbers = split(input);
+    vector<unsigned> numbers;
+    transform(strNumbers.begin(), strNumbers.end(), back_inserter(numbers), [](string s) -> unsigned { return stoi(s); });
+
+    string evenStream;
+    for (unsigned number : numbers) {
+        evenStream += evenEncode(number);
     }
 
+    cout << "Even-Rodeh Code: " << evenStream << endl;
+    cout << "From Even-Rodeh: " << vecToString(evenDecode(evenStream), " ") << endl;
     return 0;
 }
