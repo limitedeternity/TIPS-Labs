@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 #include <sstream> // для ostringstream
+#include <iterator> // для ostream_iterator
 #include <algorithm> // для reverse, transform
 #include <cassert> // для assert
 
@@ -27,10 +28,10 @@ vector<string> split(const string& s, const char delim = ' ') {
     return elems;
 }
 
-unsigned binToDec(vector<unsigned>& bin) {
+unsigned binToDec(vector<unsigned> bin) {
     unsigned n = 0;
-    for (int i = bin.size() - 1; i >= 0; i--) {
-        n += bin[i] * (1 << (bin.size() - i - 1));
+    for (size_t i = 0; i < bin.size(); i++) {
+        n += bin[bin.size() - i - 1] * (1 << i);
     }
 
     return n;
@@ -64,16 +65,16 @@ int main(void) {
     if (input.empty()) return 0;
 
     vector<string> strNumbers = split(input);
-    vector<int> gammaLev;
+    vector<unsigned> gammaLev;
 
-    for (int i = 0; i < strNumbers.size(); i++) {
-        int number = stoi(strNumbers[i]);
+    for (size_t i = 0; i < strNumbers.size(); i++) {
+        unsigned number = stoi(strNumbers[i]);
         assert(number > 0 && "Non-natural number detected");
 
         vector<unsigned> binaryNumber = decToBin(number);
         reverse(binaryNumber.begin(), binaryNumber.end());
 
-        for (int j = 0; j < binaryNumber.size() - 1; j++) {
+        for (size_t j = 0; j < binaryNumber.size() - 1; j++) {
             gammaLev.push_back(0);
             gammaLev.push_back(binaryNumber[j]);
         }
@@ -81,11 +82,11 @@ int main(void) {
         gammaLev.push_back(binaryNumber[binaryNumber.size() - 1]);
     }
 
-    cout << "Encoded stream: " << vecToString(gammaLev) << endl; 
+    cout << "Encoded stream: " << vecToString(gammaLev) << endl;
     cout << "Decoded numbers: ";
     vector<unsigned> decodedNumber;
 
-    int i = 0, j = 1;
+    size_t i = 0, j = 1;
     while (i < gammaLev.size()) {
         if (gammaLev[i] == 1) {
             decodedNumber.push_back(1);
@@ -95,10 +96,10 @@ int main(void) {
             decodedNumber.clear();
             i++, j++;
             continue;
-       }
+        }
 
-       decodedNumber.push_back(gammaLev[j]);
-       i += 2, j += 2;
+        decodedNumber.push_back(gammaLev[j]);
+        i += 2, j += 2;
     }
 
     cout << endl;

@@ -21,8 +21,8 @@ using namespace std;
 // в десятичное число.
 unsigned binToDec(vector<unsigned> bin) {
     unsigned n = 0;
-    for (int i = bin.size() - 1; i >= 0; i--) {
-        n += bin[i] * (1 << (bin.size() - i - 1));
+    for (size_t i = 0; i < bin.size(); i++) {
+        n += bin[bin.size() - i - 1] * (1 << i);
     }
 
     return n;

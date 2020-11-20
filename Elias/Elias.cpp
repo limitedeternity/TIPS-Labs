@@ -1,7 +1,9 @@
 #include <iostream>
 #include <vector>
-#include <sstream>
+#include <sstream> // для ostringstream
+#include <iterator> // для ostream_iterator
 #include <algorithm> // для transform, move
+#include <cassert> // для assert
 
 using namespace std;
 
@@ -47,10 +49,10 @@ template<class T> string vecToString(vector<T> vec, char const * delim = "") {
     return oss.str();
 }
 
-unsigned binToDec(vector<unsigned>& bin) {
+unsigned binToDec(vector<unsigned> bin) {
     unsigned n = 0;
-    for (int i = bin.size() - 1; i >= 0; i--) {
-        n += bin[i] * (1 << (bin.size() - i - 1));
+    for (size_t i = 0; i < bin.size(); i++) {
+        n += bin[bin.size() - i - 1] * (1 << i);
     }
 
     return n;
@@ -249,7 +251,11 @@ int main(void) {
 
     vector<string> strNumbers = split(input);
     vector<unsigned> numbers;
-    transform(strNumbers.begin(), strNumbers.end(), back_inserter(numbers), [](string s) -> unsigned { return stoi(s); });
+    transform(strNumbers.begin(), strNumbers.end(), back_inserter(numbers), [](string s) -> unsigned { 
+        unsigned number = stoi(s);
+        assert(number > 0 && "Non-natural number detected");
+        return number;
+    });
     
     string eliasGammaStream;
     for (unsigned number : numbers) {

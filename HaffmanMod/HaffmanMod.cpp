@@ -269,7 +269,7 @@ int main(void) {
 
     // Частотный анализ
     map<char, int> freqTable;
-    for (int i = 0; i < input.size(); i++) {
+    for (size_t i = 0; i < input.size(); i++) {
         freqTable[input[i]] += 1;
     }
 
@@ -290,7 +290,7 @@ int main(void) {
 
     // Строим map {символ->код}
     map<char, string> encodingTable;
-    for (int i = 0; i < chars.size(); i++) {
+    for (size_t i = 0; i < chars.size(); i++) {
         vector<int> code;
         BSTNode::BSTConnector* currentEdge = tree->search(chars[i]);
 
@@ -313,7 +313,7 @@ int main(void) {
     string encode = input;
 
     int position = 0;
-    for (int i = 0; i < input.size(); i++) {
+    for (size_t i = 0; i < input.size(); i++) {
         encode.replace(position, 1, encodingTable[input[i]]);
         position += encodingTable[input[i]].size();
     }
@@ -328,7 +328,7 @@ int main(void) {
 
     string selection;
     int selectionStart = 0;
-    for (int i = 0; i < encode.size(); i++) {
+    for (size_t i = 0; i < encode.size(); i++) {
         selection += encode[i];
         map<string, char>::const_iterator search = decodingTable.find(selection);
 

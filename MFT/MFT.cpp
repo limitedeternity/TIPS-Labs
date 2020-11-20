@@ -9,7 +9,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <sstream>
+#include <sstream> // для ostringstream
+#include <iterator> // для ostream_iterator
 #include <algorithm> // для rotate
 #include <cassert> // для assert
 

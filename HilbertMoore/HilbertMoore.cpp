@@ -42,7 +42,7 @@ int main(void) {
 
     // Частотный анализ
     map<char, int> freqTable;
-    for (int i = 0; i < input.size(); i++) {
+    for (size_t i = 0; i < input.size(); i++) {
         freqTable[input[i]] += 1;
     }
 
@@ -56,20 +56,20 @@ int main(void) {
 
     // Шаг 1: расчёт кумулятивных вероятностей
     vector<double> cumulative;
-    for (int i = 0; i < probabilities.size(); i++) {
+    for (size_t i = 0; i < probabilities.size(); i++) {
         vector<double> slice = vector<double>(probabilities.begin(), probabilities.begin() + i);
         cumulative.push_back(accumulate(slice.begin(), slice.end(), 0.0) + probabilities[i] / 2.0);
     }
 
     // Шаг 2: расчёт длин результирующих кодов
     vector<int> lengths;
-    for (int i = 0; i < probabilities.size(); i++) {
+    for (size_t i = 0; i < probabilities.size(); i++) {
         lengths.push_back(ceil(-log2(probabilities[i])) + 1);
     }
 
     // Шаг 3: построение кодов и их вывод
     vector<string> codes;
-    for (int i = 0; i < cumulative.size(); i++) {
+    for (size_t i = 0; i < cumulative.size(); i++) {
         codes.push_back(fracDecimalToBin(cumulative[i], lengths[i]));
         cout << chars[i] << " -> " << codes[i] << endl;
     }

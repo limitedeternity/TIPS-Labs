@@ -32,7 +32,7 @@ int main(void) {
     vector<string> cyclicTable;
     cyclicTable.push_back(input);
 
-    for (int i = 1; i < input.size(); i++) {
+    for (size_t i = 1; i < input.size(); i++) {
         cyclicTable.push_back(lshift(cyclicTable[i - 1]));
     }
 
@@ -41,7 +41,7 @@ int main(void) {
     int elemIndex = distance(cyclicTable.begin(), it);
 
     string lastColumn;
-    for (int i = 0; i < cyclicTable.size(); i++) {
+    for (size_t i = 0; i < cyclicTable.size(); i++) {
         lastColumn += cyclicTable[i][cyclicTable[i].size() - 1];
     }
 
@@ -50,12 +50,12 @@ int main(void) {
 
     string inverseBwt;
     vector<pair<char, int> > permutation;
-    for (int i = 0; i < lastColumn.size(); i++) {
+    for (size_t i = 0; i < lastColumn.size(); i++) {
         permutation.push_back(pair<char, int>(lastColumn[i], i));
     }
 
     sort(permutation.begin(), permutation.end());
-    for (int i = 0; i < lastColumn.size(); i++) {
+    for (size_t i = 0; i < lastColumn.size(); i++) {
         inverseBwt += permutation[elemIndex].first;
         elemIndex = permutation[elemIndex].second;
     }
