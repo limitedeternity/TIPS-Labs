@@ -21,18 +21,6 @@
 
 using namespace std;
 
-vector<string> split(const string& s, const char delim = ' ') {
-    vector<string> elems;
-    stringstream ss;
-    ss.str(s);
-    string item;
-    while (getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-
-    return elems;
-}
-
 template<class T> vector<T> rjust(vector<T> vec, unsigned len, T justifier) {
     vector<T> vecCopy(vec);
     while (vecCopy.size() < len) {
@@ -89,7 +77,7 @@ int main(void) {
         cout << "Invalid m" << endl;
         return 1;
     } else {
-        assert(m > 0 && "m shouldn't equal to 0");
+        assert(m > 0 && m <= 256 && "0 < m <= 256");
         // Существует разновидность кода Голомба – код Райса,
         // иногда называемый "ленивым кодом Голомба".
         // Единственное его отличие от кода Голомба заключается в том,
@@ -112,7 +100,7 @@ int main(void) {
         decodingTable = Haffman::buildDecodingTable(encodingTable);
     }
 
-    string input;
+    vector<unsigned> numbers;
     cout << "Positive numbers (space delimited): ";
     while (cin.peek() != '\n') {
         unsigned n;
@@ -121,23 +109,14 @@ int main(void) {
             return 1;
         }
 
-        input += to_string(n) + ' ';
+        numbers.push_back(n);
     }
 
     cin.ignore();
-    if (input.empty()) {
+    if (numbers.empty()) {
         cout << "No numbers to encode. Exiting..." << endl;
         return 0;
     }
-
-    input.pop_back();
-    vector<string> strNumbers = split(input); 
-    vector<unsigned> numbers;
-    transform(strNumbers.begin(), strNumbers.end(), back_inserter(numbers), [&](string s) -> unsigned { 
-        unsigned n = stoi(s);
-        assert(n % m < 256 && "Boundary condition didn't meet");
-        return n; 
-    });
 
     string golombStream;
     for (unsigned n : numbers) {
