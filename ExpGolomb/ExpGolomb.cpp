@@ -1,5 +1,11 @@
 /*
- * -std=c++11
+ * Программа для кодирования положительных целых чисел
+ * экспоненциальным кодом Голомба
+ *
+ * Автор: Беспалов В. (3 курс, ИС)
+ * Эффективное время написания: 3.5 часа
+ * Компилятор: Apple LLVM version 10.0.0 (clang-1000.10.44.4)
+ * Доп.флаги компиляции: -std=c++11
  */
 
 #include <iostream>
@@ -12,6 +18,15 @@
 #include "Unary.hpp"
 
 using namespace std;
+
+template<class T> vector<T> rjust(vector<T> vec, unsigned len, T justifier) {
+    vector<T> vecCopy(vec);
+    while (vecCopy.size() < len) {
+        vecCopy.insert(vecCopy.begin(), justifier);
+    }
+
+    return vecCopy;
+}
 
 template<class T> string vecToString(vector<T> vec, char const * delim = "") {
     ostringstream oss;
@@ -80,9 +95,9 @@ int main(void) {
         unsigned f = floor(log2(1.0 + buff));
 
         string unaryF = Unary::encode(f);
-        vector<unsigned> binaryW = decToBin(w);
+        vector<unsigned> binaryW = rjust(decToBin(w), f, (unsigned) 0);
         string slicedBinaryW = vecToString(vector<unsigned>(binaryW.begin() + (binaryW.size() - f), binaryW.end()));
-        vector<unsigned> binaryN = decToBin(n);
+        vector<unsigned> binaryN = rjust(decToBin(n), k, (unsigned) 0);
         string slicedBinaryN = vecToString(vector<unsigned>(binaryN.begin() + (binaryN.size() - k), binaryN.end()));
         expGolombStream += unaryF + slicedBinaryW + slicedBinaryN;
     }
@@ -91,15 +106,22 @@ int main(void) {
 
     vector<unsigned> fromExpGolomb;
     size_t i = 0;
-    /*while (i < expGolombStream.size()) {
+    while (i < expGolombStream.size()) {
         unsigned f = 0;
         size_t shift = 0;
         while (expGolombStream[i + shift++] == '1') {
             f++;
         }
 
+        vector<char> RAsStr(expGolombStream.begin() + i + shift, expGolombStream.begin() + i + shift + f + k);
+        vector<unsigned> RAsVec;
+        transform(RAsStr.begin(), RAsStr.end(), back_inserter(RAsVec), [](char c) -> unsigned { return c - '0'; });
+        unsigned r = binToDec(RAsVec);
         
-    }*/
+        fromExpGolomb.push_back(((1 << f) - 1) * (1 << k) + r);
+        i += shift + f + k;
+    }
 
+    cout << "Decoded: " << vecToString(fromExpGolomb, " ") << endl;
     return 0;
 }
