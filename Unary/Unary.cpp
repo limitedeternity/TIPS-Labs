@@ -59,8 +59,8 @@ int main(void) {
     cout << "Encoded stream: " << bitstream << endl;
 
     vector<string> splitBitstream = split(bitstream, '0');
-    vector<int> decodedNumbers;
-    transform(splitBitstream.begin(), splitBitstream.end(), back_inserter(decodedNumbers), [](string s) -> int { return s.size(); });
+    vector<unsigned> decodedNumbers;
+    transform(splitBitstream.begin(), splitBitstream.end(), back_inserter(decodedNumbers), [](string s) -> unsigned { return s.size(); });
     
     cout << "Decoded numbers: " << vecToString(decodedNumbers, " ") << endl;
     return 0;
