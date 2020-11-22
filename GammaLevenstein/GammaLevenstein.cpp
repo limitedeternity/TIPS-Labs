@@ -11,7 +11,7 @@
 #include <string>
 #include <sstream> // для ostringstream
 #include <iterator> // для ostream_iterator
-#include <algorithm> // для reverse, transform
+#include <algorithm> // для reverse
 #include <cassert> // для assert
 
 using namespace std;

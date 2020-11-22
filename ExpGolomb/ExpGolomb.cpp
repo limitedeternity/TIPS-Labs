@@ -13,6 +13,7 @@
 #include <vector>
 #include <sstream> // для ostringstream
 #include <iterator> // для ostream_iterator
+#include <algorithm> // для transform
 #include <cmath> // для log2, floor
 
 #include "Unary.hpp"

@@ -4,7 +4,7 @@
 #include <string>
 #include <any>
 #include <functional> // для типа function
-#include <algorithm> // для sort, transform
+#include <algorithm> // для sort
 #include <sstream> // для ostringstream
 #include <iterator> // для ostream_iterator
 

@@ -12,7 +12,7 @@
 #include <string>
 #include <sstream> // для ostringstream
 #include <iterator> // для ostream_iterator
-#include <algorithm>
+#include <algorithm> // для transform
 
 using namespace std;
 
