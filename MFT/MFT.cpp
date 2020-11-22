@@ -51,14 +51,18 @@ string IMFT(vector<unsigned> code, string alphabet) {
     return result;
 }
 
+string printableASCII() {
+    return string("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ \r\t\n");
+}
+
 int main(void) {
     string input;
     cout << "Input: ";
     getline(cin, input);
     if (input.empty()) return 0;
 
-    vector<unsigned> code = MFT(input, string("abcdefghijklmnopqrstuvwxyz"));
+    vector<unsigned> code = MFT(input, printableASCII());
     cout << "MFT(\"" << input << "\") = [" << vecToString(code, ", ") << "]" << endl;
-    cout << "IMFT([" << vecToString(code, ", ") << "]) = \"" << IMFT(code, string("abcdefghijklmnopqrstuvwxyz")) << "\"" << endl;
+    cout << "IMFT([" << vecToString(code, ", ") << "]) = \"" << IMFT(code, printableASCII()) << "\"" << endl;
     return 0;
 }
