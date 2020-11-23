@@ -129,7 +129,7 @@ namespace HammingECC {
             }
         }
 
-        if (indexOfError && overallExpected == overallActual) {
+        if (indexOfError >= encoded.size() || (indexOfError && overallExpected == overallActual)) {
             throw runtime_error("Double error detected!");
         } else if (indexOfError && overallExpected != overallActual) {
             encoded[indexOfError] ^= 1;
