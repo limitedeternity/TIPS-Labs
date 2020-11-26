@@ -97,6 +97,13 @@ int main(void) {
         }
 
         encodingTable = Haffman::buildEncodingTable(remainderCodes);
+
+        cout << "Remainder map:" << endl;
+        for (map<char, string>::const_iterator it = encodingTable.begin(); it != encodingTable.end(); it++) {
+            cout << (unsigned) it->first << " -> " << it->second << endl;
+        }
+
+        cout << endl;
         decodingTable = Haffman::buildDecodingTable(encodingTable);
     }
 
