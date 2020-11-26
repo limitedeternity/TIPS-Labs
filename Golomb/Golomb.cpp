@@ -123,7 +123,7 @@ int main(void) {
         if ((m & (m - 1)) == 0) {
             golombStream += Unary::encode(n / m) + vecToString(rjust(decToBin(n % m), log2(m), (unsigned) 0));
         } else {
-            golombStream += Unary::encode(n / m) + encodingTable.find((char) n % m)->second;
+            golombStream += Unary::encode(n / m) + encodingTable.find((char) (n % m))->second;
         }
     }
 
