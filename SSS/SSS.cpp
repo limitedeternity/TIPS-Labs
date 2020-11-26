@@ -13,7 +13,7 @@
 #include <cassert> // для assert
 #include <functional> // для типа function
 #include <numeric> // для accumulate
-#include <algorithm> // для transform
+#include <algorithm> // для transform, max_element
 #include <sstream> // для ostringstream
 #include <iterator> // для ostream_iterator
 
@@ -89,11 +89,11 @@ vector<unsigned> getUintStream(function<bool(unsigned)> condition) {
 
 int main(void) {
     cout << "i = ";
-    unsigned i = getUint(3, [](unsigned u) -> bool { return u > 0; }); 
+    unsigned i = getUint(3, [](unsigned u) -> bool { return true; }); 
     cout << "j = ";
-    unsigned j = getUint(2, [](unsigned u) -> bool { return u > 0; });
+    unsigned j = getUint(2, [](unsigned u) -> bool { return true; });
     cout << "k = ";
-    unsigned k = getUint(11, [](unsigned u) -> bool { return u > 0; });
+    unsigned k = getUint(11, [&](unsigned u) -> bool { return u >= i; });
 
     cout << "Natural numbers (space delimited): ";
     vector<unsigned> numbers = getUintStream([](unsigned u) -> bool { return u > 0; });
@@ -102,7 +102,7 @@ int main(void) {
         return 0;
     }
 
-    unsigned k1 = (k - i) / j + 1;
+    unsigned k1 = j > 0 ? (k - i) / j + 1 : *max_element(numbers.begin(), numbers.end()) + 1;
     vector<unsigned> rangePowers;
     for (unsigned c = 0; c < k1; c++) {
         rangePowers.push_back(1 << (i + c * j));
